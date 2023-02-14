@@ -13,12 +13,12 @@ os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 import tensorflow as tf
 
 
-interpreter = tf.lite.Interpreter(model_path='3_withoutlast9Layers_Model.tflite')
+interpreter = tf.lite.Interpreter(model_path='Saved Tflite Models/4-mobilenet_without_the_last9Layer_model_quant_integar_ONLY.tflite')
 interpreter.allocate_tensors()
 
 # Get input and output tensors.
-input_details = interpreter.get_input_details()
-output_details = interpreter.get_output_details()
+input_details = interpreter.get_input_details()[0]
+output_details = interpreter.get_output_details()[0]
 
 
 classes = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 
@@ -26,19 +26,26 @@ classes = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K',
            'W', 'X', 'Y', 'Z', 'del', 'nothing', 'space']
 
 def preprocess_Input(X):
-    np_X = np.array(X)
-    normalised_X = np_X.astype('float32')/255.0
-    normalised_X = np.expand_dims(normalised_X, axis=0)
+    X = np.array(X)
+        # Check if the input type is quantized, then rescale input data to uint8
+    if input_details['dtype'] == np.uint8:
+        input_scale, input_zero_point = input_details["quantization"]
+        X = X / input_scale + input_zero_point
+
+    else :
+        normalised_X = X.astype(input_details["dtype"])/255.0
+
+    normalised_X = np.expand_dims(X, axis=0).astype(input_details["dtype"])
     return normalised_X
 
 
 def predict(image_data):
 
-    interpreter.set_tensor(input_details[0]['index'], image_data)
+    interpreter.set_tensor(input_details["index"], image_data)
     interpreter.invoke()
 
     # Get the result 
-    output_data = interpreter.get_tensor(output_details[0]['index'])
+    output_data = interpreter.get_tensor(output_details["index"])[0]   #that 0 index i dont know if i should put it or not yet
     Index = np.argmax(output_data)
     max_score = output_data.max()
     res = classes[Index]
