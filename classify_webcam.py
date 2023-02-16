@@ -1,6 +1,6 @@
 import sys
 import os
-
+import time
 # import matplotlib
 import numpy as np
 # import matplotlib.pyplot as plt
@@ -12,7 +12,7 @@ import tensorflow_hub as hub
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 import tensorflow as tf
 
-model = tf.keras.models.load_model('MobileNetWithoutTheLast9Layers.h5', custom_objects={'KerasLayer':hub.KerasLayer})
+model = tf.keras.models.load_model("Saved H5 files Models for MobileNet/4-MobileNetWithoutTheLast9Layers.h5", custom_objects={'KerasLayer':hub.KerasLayer})
 classes = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 
            'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 
            'W', 'X', 'Y', 'Z', 'del', 'nothing', 'space']
@@ -49,6 +49,10 @@ mem = ''
 consecutive = 0
 sequence = ''
 
+fps = 0
+start = time.time()
+frame_count = 0
+
 while True:
     ret, img = cap.read()
     img = cv2.flip(img, 1)
@@ -82,8 +86,24 @@ while True:
                     sequence += res
                 consecutive = 0
         i += 1
+
+        #calculate the FPS
+        # Increment the frame count
+        frame_count += 1
+        
+        # Calculate the fps every 10 frames
+        if frame_count % 10 == 0:
+            end = time.time()
+            fps = 10 / (end - start)
+            start = time.time()
+            frame_count = 0
+        
+        # Display the fps
+        print("FPS: ", fps)
+
         cv2.putText(img, '%s' % (res.upper()), (100,400), cv2.FONT_HERSHEY_SIMPLEX, 4, (255,255,255), 4)
-        cv2.putText(img, '(score = %.5f)' % (float(score)), (100,450), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255))
+        cv2.putText(img, '(score = %.5f)' % (float(score)), (0,450), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255))
+        cv2.putText(img, '(FPS = %.5f)' % (float(fps)), (350,450), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255))
         mem = res
         cv2.rectangle(img, (x1, y1), (x2, y2), (255,0,0), 2)
         cv2.imshow("img", img)
