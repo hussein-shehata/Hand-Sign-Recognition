@@ -12,7 +12,7 @@ import tensorflow_hub as hub
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 import tensorflow as tf
 
-model = tf.keras.models.load_model("Saved H5 files Models for MobileNet/4-MobileNetWithoutTheLast9Layers.h5", custom_objects={'KerasLayer':hub.KerasLayer})
+model = tf.keras.models.load_model("MobileNetWithoutTheLast9Layers_GreyScale.h5", custom_objects={'KerasLayer':hub.KerasLayer})
 classes = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 
            'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 
            'W', 'X', 'Y', 'Z', 'del', 'nothing', 'space']
@@ -61,7 +61,7 @@ while True:
         x1, y1, x2, y2 = 100, 100, 300, 300
         img_cropped = img[y1:y2, x1:x2]
         frame = cv2.resize(img_cropped, (200, 200), interpolation=cv2.INTER_CUBIC)
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         c += 1
         # image_data = cv2.imencode('.jpg', frame)[1].tostring()
         image_data = tf.keras.utils.img_to_array(frame)
